@@ -25,6 +25,8 @@ from recogImage import recog
 
 app = Flask(__name__)
 
+print("Say Hi!")
+
 
 @app.route("/")
 def home():
@@ -39,12 +41,29 @@ def recognition():
         imgdata = base64.b64decode(input_data['image_base64'])
         # print(type(imgdata))
         imagedata = Image.open(io.BytesIO(imgdata))
+        # imagedata.save("imageAttedance/newImage.jpg")
         # print(type(imagedata))
         imgnew = cv2.cvtColor(np.array(imagedata), cv2.COLOR_BGR2RGB)
 
         output = recog(imgnew)
 
         respons = {'output': output}
+
+        return jsonify(respons)
+
+@app.route("/regis", methods=["POST"])
+def register():
+    if request.method == 'POST':
+        input_data = request.get_json(force=True)
+        name = input_data['name']
+        imgdata = base64.b64decode(input_data['image_base64'])
+        imagedata = Image.open(io.BytesIO(imgdata))
+        imagedata.save("imageAttedance/{}.jpg".format(name))
+
+        respons = {
+            'status': 'Success',
+            'message': 'User Berhasil Ditambahkan!',
+        }
 
         return jsonify(respons)
 

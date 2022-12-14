@@ -10,8 +10,41 @@ import io
 from PIL import Image
 
 
+def register(new_register):
+    cap = cv2.VideoCapture(0)
+    while True:
+        success, img = cap.read()
+        # img = captureScreen()
+        imgS = cv2.resize(img, (0, 0), None, 0.25, 0.25)
+        imgS = cv2.cvtColor(imgS, cv2.COLOR_BGR2RGB)
+
+        facesCurFrame = face_recognition.face_locations(imgS)
+
+        if facesCurFrame:
+            y1, x2, y2, x1 = facesCurFrame[0]
+            y1, x2, y2, x1 = y1 * 4, x2 * 4, y2 * 4, x1 * 4
+            cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+
+        cv2.imshow('Webcam', img)
+        key = cv2.waitKey(1)
+        if key == ord('q'):
+            break
+        elif key == ord('c'):
+            if facesCurFrame:
+                print("Encoding image to Base64")
+                res, img = cv2.imencode('.jpg', img)
+                data = base64.b64encode(img).decode('utf-8')
+
+                rawJson = {
+                    "image_base64": data,
+                    "name": new_register
+                }
+                response_recognition = requests.post(url='http://127.0.0.1:5000/regis', data=json.dumps(rawJson))
+                print(response_recognition.json())
+                break
+
+
 def login():
-    trig_api = 0
     cap = cv2.VideoCapture(0)
 
     def callAPI(img):
@@ -65,7 +98,6 @@ def login():
                 # cv2.rectangle(img, (x1, y2 - 35), (x2, y2), (0, 255, 0), cv2.FILLED)
                 # cv2.putText(img, "Loading", (x1 + 6, y2 - 6), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 255, 255), 2)
                 pass
-
 
         #     else:
         #         name = "PENGUNJUNG"
