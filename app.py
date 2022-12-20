@@ -20,12 +20,35 @@ import cv2
 import numpy as np
 from PIL import Image
 from flask import Flask, request, jsonify
+import face_recognition
+import os
 
 from recogImage import recog
 
 app = Flask(__name__)
 
-print("Say Hi!")
+# Encoding List Image Known
+path = 'imageAttedance'
+images = []
+classNames = []
+myList = os.listdir(path)
+print(myList)
+for cl in myList:
+    curImg = cv2.imread(f'{path}/{cl}')
+    images.append(curImg)
+    classNames.append(os.path.splitext(cl)[0])
+print(classNames)
+
+def findEncodings(images):
+    encodeList = []
+    for img in images:
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        encode = face_recognition.face_encodings(img)[0]
+        encodeList.append(encode)
+    return encodeList
+
+encodeListKnown = findEncodings(images)
+print('Encoding Complete')
 
 
 @app.route("/")
@@ -45,7 +68,7 @@ def recognition():
         # print(type(imagedata))
         imgnew = cv2.cvtColor(np.array(imagedata), cv2.COLOR_BGR2RGB)
 
-        output = recog(imgnew)
+        output = recog(encodeListKnown, classNames, imgnew)
 
         respons = {'output': output}
 
