@@ -14,6 +14,7 @@ def register(new_register):
     cap = cv2.VideoCapture(0)
     while True:
         success, img = cap.read()
+        imgC = img
         # img = captureScreen()
         imgS = cv2.resize(img, (0, 0), None, 0.25, 0.25)
         imgS = cv2.cvtColor(imgS, cv2.COLOR_BGR2RGB)
@@ -32,14 +33,14 @@ def register(new_register):
         elif key == ord('c'):
             if facesCurFrame:
                 print("Encoding image to Base64")
-                res, img = cv2.imencode('.jpg', img)
+                res, img = cv2.imencode('.jpg', imgC)
                 data = base64.b64encode(img).decode('utf-8')
 
                 rawJson = {
                     "image_base64": data,
                     "name": new_register
                 }
-                response_recognition = requests.post(url='http://127.0.0.1:5000/regis', data=json.dumps(rawJson))
+                response_recognition = requests.post(url='http://127.0.0.1:5000/regis ', data=json.dumps(rawJson))
                 print(response_recognition.json())
                 break
 

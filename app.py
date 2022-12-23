@@ -22,6 +22,7 @@ from PIL import Image
 from flask import Flask, request, jsonify
 import face_recognition
 import os
+import subprocess
 
 from recogImage import recog
 
@@ -39,6 +40,7 @@ for cl in myList:
     classNames.append(os.path.splitext(cl)[0])
 print(classNames)
 
+
 def findEncodings(images):
     encodeList = []
     for img in images:
@@ -46,6 +48,7 @@ def findEncodings(images):
         encode = face_recognition.face_encodings(img)[0]
         encodeList.append(encode)
     return encodeList
+
 
 encodeListKnown = findEncodings(images)
 print('Encoding Complete')
