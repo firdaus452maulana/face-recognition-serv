@@ -86,6 +86,13 @@ def register():
         imagedata = Image.open(io.BytesIO(imgdata))
         imagedata.save("imageAttedance/{}.jpg".format(name))
 
+        # Open Image and Encode that for create model
+        curImg = cv2.imread(f'imageAttedance/{name}.jpg')
+        img = cv2.cvtColor(curImg, cv2.COLOR_BGR2RGB)
+        encode = face_recognition.face_encodings(img)[0]
+        encodeListKnown.append(encode)
+        classNames.append(name)
+
         respons = {
             'status': 'Success',
             'message': 'User Berhasil Ditambahkan!',
