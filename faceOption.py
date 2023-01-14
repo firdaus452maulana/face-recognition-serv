@@ -40,7 +40,7 @@ def register(new_register):
                     "image_base64": data,
                     "name": new_register
                 }
-                response_recognition = requests.post(url='http://13.212.16.45/regis', data=json.dumps(rawJson))
+                response_recognition = requests.post(url='http://127.0.0.1:5000/regis', data=json.dumps(rawJson))
                 print(response_recognition.json())
                 break
 
@@ -54,7 +54,7 @@ def login():
         rawJson = {
             "image_base64": data
         }
-        response_recognition = requests.post(url='http://13.212.16.45/recog', data=json.dumps(rawJson))
+        response_recognition = requests.post(url='http://127.0.0.1:5000/recog', data=json.dumps(rawJson))
         print(response_recognition.json())
 
     def initialize():
@@ -134,7 +134,7 @@ def login():
         rawJson = {
             "image_base64": data
         }
-        response_recognition = requests.post(url='http://13.212.16.45/recog', data=json.dumps(rawJson))
+        response_recognition = requests.post(url='http://127.0.0.1:5000/recog', data=json.dumps(rawJson))
         print(response_recognition.json())
 
 
