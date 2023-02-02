@@ -35,12 +35,12 @@ def register(new_register):
                 print("Encoding image to Base64")
                 res, img = cv2.imencode('.jpg', imgC)
                 data = base64.b64encode(img).decode('utf-8')
-
+                print(data)
                 rawJson = {
                     "image_base64": data,
                     "name": new_register
                 }
-                response_recognition = requests.post(url='http://127.0.0.1:5000/regis', data=json.dumps(rawJson))
+                response_recognition = requests.post(url='http://13.214.179.175/regis', data=json.dumps(rawJson))
                 print(response_recognition.json())
                 break
 
@@ -54,7 +54,8 @@ def login():
         rawJson = {
             "image_base64": data
         }
-        response_recognition = requests.post(url='http://127.0.0.1:5000/recog', data=json.dumps(rawJson))
+        print(data)
+        response_recognition = requests.post(url='http://13.214.179.175/recog', data=json.dumps(rawJson))
         print(response_recognition.json())
 
     def initialize():
@@ -134,7 +135,7 @@ def login():
         rawJson = {
             "image_base64": data
         }
-        response_recognition = requests.post(url='http://127.0.0.1:5000/recog', data=json.dumps(rawJson))
+        response_recognition = requests.post(url='http://13.214.179.175/recog', data=json.dumps(rawJson))
         print(response_recognition.json())
 
 

@@ -19,14 +19,22 @@ import io
 import cv2
 import numpy as np
 from PIL import Image
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, flash, redirect
+from werkzeug.utils import secure_filename
 import face_recognition
 import os
-import subprocess
 
 from recogImage import recog
 
+UPLOAD_FOLDER = 'imageTemp'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = 1024 * 1024
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Encoding List Image Known
 path = 'imageAttedance'
@@ -89,6 +97,14 @@ def register():
         # Open Image and Encode that for create model
         curImg = cv2.imread(f'imageAttedance/{name}.jpg')
         img = cv2.cvtColor(curImg, cv2.COLOR_BGR2RGB)
+        facesCurFrame = face_recognition.face_locations(img)
+        if not facesCurFrame:
+            os.remove("imageAttedance/{}.jpg".format(name))
+            respons = {
+                'status': 'Failed',
+                'message': 'Wajah Tidak Ditemukan',
+            }
+            return jsonify(respons)
         encode = face_recognition.face_encodings(img)[0]
         encodeListKnown.append(encode)
         classNames.append(name)
@@ -99,6 +115,70 @@ def register():
         }
 
         return jsonify(respons)
+
+@app.route("/recog-photo", methods=["POST"])
+async def recognitionPhoto():
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+            img = cv2.imread(f'imageTemp/{filename}')
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            output = recog(encodeListKnown, classNames, img)
+            respons = {'output': output}
+
+            os.remove("imageTemp/{}".format(filename))
+            return jsonify(respons)
+
+@app.route("/regis-photo", methods=["POST"])
+async def registerPhoto():
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            flash('No file part')
+            return redirect(request.url)
+        file = request.files['file']
+        if file.filename == '':
+            flash('No selected file')
+            return redirect(request.url)
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+            img = cv2.imread(f'imageTemp/{filename}')
+            cur_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            facesCurFrame = face_recognition.face_locations(cur_img)
+            if not facesCurFrame:
+                os.remove("imageTemp/{}".format(filename))
+                respons = {
+                    'status': 'Failed',
+                    'message': 'Wajah Tidak Ditemukan',
+                }
+                return jsonify(respons)
+
+            # Saving Image to folder
+            name = request.form['name']
+            formatFile = os.path.splitext(filename)[1]
+            cv2.imwrite("imageAttedance/{}".format(name+formatFile), img)
+
+            os.remove("imageTemp/{}".format(filename))
+            encode = face_recognition.face_encodings(img)[0]
+            encodeListKnown.append(encode)
+            classNames.append(name)
+
+            respons = {
+                'status': 'Success',
+                'message': 'User Berhasil Ditambahkan!',
+            }
+            return jsonify(respons)
+
 
 
 if __name__ == "__main__":
